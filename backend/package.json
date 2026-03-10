@@ -1,0 +1,17 @@
+{
+  "name": "demoagor-backend",
+  "version": "1.0.0",
+  "description": "Demo backend for Agor environment feature",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
