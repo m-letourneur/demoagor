@@ -1,5 +1,8 @@
 # Agor Environment Demo
 
+[![CI](https://github.com/m-letourneur/demoagor/actions/workflows/ci.yml/badge.svg)](https://github.com/m-letourneur/demoagor/actions/workflows/ci.yml)
+[![CD](https://github.com/m-letourneur/demoagor/actions/workflows/cd.yml/badge.svg)](https://github.com/m-letourneur/demoagor/actions/workflows/cd.yml)
+
 This project demonstrates **Agor's Environment feature** - the ability to start, stop, and manage Docker Compose environments per worktree.
 
 ## What is Agor Environment?
@@ -21,11 +24,11 @@ This demo includes:
 - **PostgreSQL** (port 5432) - Database service
 - **Express Backend** (port 3000) - Node.js API with health endpoint
 - **Docker Compose** - Container orchestration
-- **.agor.yaml** - Agor environment configuration
+- **.agor.yml** - Agor environment configuration
 
 ## How It Works
 
-### 1. Environment Configuration (`.agor.yaml`)
+### 1. Environment Configuration (`.agor.yml`)
 
 ```yaml
 environment:
@@ -172,7 +175,123 @@ docker compose -p demoagor-wt2 down
 - 🤖 **AI-native** - Agents can manage environments programmatically
 - 🔧 **No conflicts** - Dynamic ports prevent collision between worktrees
 
+## CI/CD Pipeline
+
+This project includes automated CI/CD workflows using GitHub Actions.
+
+### Continuous Integration (CI)
+
+**Workflow:** `.github/workflows/ci.yml`
+
+**Triggers:**
+- Push to any branch
+- Pull request to any branch
+
+**Jobs:**
+1. **Lint** - Code quality checks (placeholder for future linting)
+2. **Build & Test** - Multi-version Node.js testing
+   - Tests Node 18 and 20
+   - Builds Docker images with layer caching
+   - Starts Docker Compose environment
+   - Runs health checks and API tests
+   - Cleans up after tests
+3. **Docker Security** - Vulnerability scanning with Trivy
+   - Scans for CRITICAL and HIGH severity vulnerabilities
+   - Uploads results to GitHub Security tab
+4. **Summary** - Aggregates results and reports status
+
+**Key Features:**
+- 🚀 **Matrix builds** - Tests against multiple Node versions
+- 📦 **Docker layer caching** - Faster builds using GitHub cache
+- 🔒 **Security scanning** - Automated vulnerability detection
+- ✅ **Health checks** - Validates services are running correctly
+- 📊 **PR comments** - Automatic summary in GitHub UI
+
+### Continuous Deployment (CD)
+
+**Workflow:** `.github/workflows/cd.yml`
+
+**Triggers:**
+- Push to `main` branch (after PR merge)
+
+**Jobs:**
+1. **Build & Push** - Publishes Docker images to GitHub Container Registry
+   - Builds multi-platform images (amd64, arm64)
+   - Tags with branch name, commit SHA, and `latest`
+   - Uses Docker layer caching for speed
+
+**Published Images:**
+```bash
+ghcr.io/m-letourneur/demoagor/backend:latest
+ghcr.io/m-letourneur/demoagor/backend:main-<sha>
+```
+
+**Using Published Images:**
+```bash
+# Pull the latest image
+docker pull ghcr.io/m-letourneur/demoagor/backend:latest
+
+# Update docker-compose.yml to use published image
+# services:
+#   backend:
+#     image: ghcr.io/m-letourneur/demoagor/backend:latest
+```
+
+### Dependency Management
+
+**Configuration:** `.github/dependabot.yml`
+
+Dependabot automatically:
+- Updates npm dependencies (weekly on Mondays)
+- Updates Docker base images (weekly on Mondays)
+- Updates GitHub Actions versions (weekly on Mondays)
+- Groups minor/patch updates together
+- Creates PRs with proper labels
+
+### Running CI Locally
+
+**Quick test:**
+```bash
+# Run the same checks as CI
+docker compose up -d
+sleep 10
+curl http://localhost:3000/health
+curl http://localhost:3000/api/hello
+docker compose down -v
+```
+
+**Full CI simulation:**
+```bash
+# Test multiple Node versions
+for version in 18 20; do
+  echo "Testing with Node $version"
+  docker run --rm -v "$PWD/backend":/app -w /app node:$version npm ci
+done
+
+# Build and test with docker-compose
+docker compose up -d
+docker compose ps
+curl -f http://localhost:3000/health
+docker compose down -v
+```
+
+### Workflow Customization
+
+**Add linting:**
+1. Install ESLint or Prettier in `backend/package.json`
+2. Update the "Lint" job in `.github/workflows/ci.yml`
+
+**Add deployment:**
+1. Uncomment the `deploy` job in `.github/workflows/cd.yml`
+2. Add deployment commands (kubectl, ssh, terraform, etc.)
+3. Configure GitHub Environment secrets
+
+**Modify security scans:**
+- Edit Trivy severity levels in `.github/workflows/ci.yml`
+- Add additional security tools (Snyk, Grype, etc.)
+
 ## Learn More
 
 - [Agor Documentation](https://agor.live)
 - [Environment Configuration Reference](https://github.com/agor-ai/agor)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
