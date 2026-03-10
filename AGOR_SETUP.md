@@ -8,7 +8,7 @@ The setup allows **multiple worktrees to run Docker Compose environments in para
 
 ## Configuration Files
 
-### `.agor.yaml` - Agor Environment Config
+### `.agor.yml` - Agor Environment Config
 
 Uses Agor's template syntax to generate dynamic commands:
 
