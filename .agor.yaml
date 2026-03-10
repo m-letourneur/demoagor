@@ -1,0 +1,8 @@
+environment:
+  # Dynamic ports using worktree unique_id (e.g., worktree 1: 3001, 5433)
+  # This allows multiple worktrees to run in parallel without port conflicts
+  start: BACKEND_PORT={{add 3000 worktree.unique_id}} POSTGRES_PORT={{add 5432 worktree.unique_id}} docker compose -p demoagor-{{worktree.name}} up -d
+  stop: docker compose -p demoagor-{{worktree.name}} down
+  health: http://localhost:{{add 3000 worktree.unique_id}}/health
+  app: http://localhost:{{add 3000 worktree.unique_id}}
+  logs: docker compose -p demoagor-{{worktree.name}} logs --tail=100
